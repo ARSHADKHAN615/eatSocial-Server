@@ -29,21 +29,21 @@ app.use('/api/auth', AuthRoutes);
 
 
 // FILE UPLOAD
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, '../client/public/uploads');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + file.originalname);
-    }
-})
-const upload = multer({ storage: storage })
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, '../client/public/uploads');
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, Date.now() + file.originalname);
+//     }
+// })
+// const upload = multer({ storage: storage })
 
-// Post Image Upload
-app.post('/api/upload', [upload.single('file'), verifyToke], (req, res) => {
-    const file = req.file;
-    res.status(200).json({ message: 'File uploaded', file: file.filename });
-});
+// // Post Image Upload
+// app.post('/api/upload', [upload.single('file'), verifyToke], (req, res) => {
+//     const file = req.file;
+//     res.status(200).json({ message: 'File uploaded', file: file.filename });
+// });
 
 
 // ERROR HANDLING
