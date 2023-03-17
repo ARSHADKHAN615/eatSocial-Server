@@ -1,53 +1,35 @@
+import UserModel from "../Models/User.js";
 import db from "../connect.js";
 
 const UserControllers = {
-    // GET /users
-    index: (req, res) => {
-        res.send('GET /users');
-    },
-    // GET /users/:id
+    // GET /user/:id
     show: async (req, res, next) => {
-        const { userId } = req.params;
-        const query = 'SELECT * FROM users WHERE id = ?';
-        db.query(query, [userId], (err, data) => {
-            if (err) return next(err);
-            const user = data[0];
-            const { password, ...userWithoutPassword } = user;
-            res.status(200).json(userWithoutPassword);
-        })
+        try {
+            const userData = await UserModel.getUser(req);
+            const userFollowings = await UserModel.getFollowing(req);
+            const userFollowers = await UserModel.getFollowers(req);
+            res.status(200).json({ ...userData, followings: userFollowings, followers: userFollowers });
+        } catch (err) {
+            return next(err);
+        }
     },
     // PUT /user
     update: async (req, res, next) => {
-        let { name, city, website, profilePic, coverPic } = req.body;
-
-        const query = 'UPDATE users SET name = ?, city = ?, website = ?, profilePic = ?, coverPic = ? WHERE id = ?';
-
-        profilePic = profilePic[0]?.xhr || profilePic[0]?.url;
-        coverPic = coverPic[0]?.xhr || coverPic[0]?.url;
-
-        const values = [name, city, website, profilePic, coverPic, req.user.id];
-
-        db.query(query, values, (err, data, fields) => {
-            if (err) return next(err);
-            res.status(200).json({ message: 'User updated' });
-        })
+        try {
+            const userData = await UserModel.update(req);
+            res.status(200).json(userData);
+        } catch (err) {
+            return next(err);
+        }
     },
-    getFollowers: async (req, res, next) => {
-        const { userId } = req.params;
-        const query = 'SELECT * FROM relationships AS r WHERE r.followedUserId = ?';
-        db.query(query, [userId], (err, data) => {
-            if (err) return next(err);
-            res.status(200).json(data.map(user => user.followerUserId));
-        })
-    },
-    getFollowing: async (req, res, next) => {
-        const { userId } = req.params;
-        const query = 'SELECT * FROM relationships AS r WHERE r.followerUserId = ?';
-        db.query(query, [userId], (err, data) => {
-            if (err) return next(err);
-            res.status(200).json(data.map(user => user.followedUserId));
-        })
-
+    search: async (req, res, next) => {
+        const { search } = req.query;
+        try {
+            const userData = await UserModel.userSearch(search);
+            res.status(200).json(userData);
+        } catch (err) {
+            return next(err);
+        }
     },
     followUser: async (req, res, next) => {
         const { userId } = req.params;
