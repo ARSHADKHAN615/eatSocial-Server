@@ -31,6 +31,14 @@ const UserControllers = {
             return next(err);
         }
     },
+    getUsersWhichHaveMostFollowers: async (req, res, next) => {
+        try {
+            const users = await UserModel.getUsersWhichHaveMostFollowers();
+            res.status(200).json(users);
+        } catch (err) {
+            return next(err);
+        }
+    },
     followUser: async (req, res, next) => {
         const { userId } = req.params;
         const query = 'INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)';

@@ -8,6 +8,17 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import path from 'path';
 import verifyToke from './middlewares/authHandling.js';
+import http from 'http';
+import { Server } from 'socket.io';
+import SocketEvents from './socketEvents.js';
+
+
+// Create a new HTTP server with the Express app
+const server = http.createServer(app);
+
+
+// Create a new Socket.IO server and attach it to the HTTP server
+const io = new Server(server, { cors: { origin: '*' } });
 
 
 const corsOptions = {
@@ -26,6 +37,9 @@ dotenv.config();
 // ROUTES
 app.use('/api', Routes);
 app.use('/api/auth', AuthRoutes);
+
+// SOCKET.IO
+SocketEvents.init(io);
 
 
 // FILE UPLOAD
@@ -52,7 +66,8 @@ app.use((err, req, res, next) => {
     const message = err.message || 'Something went wrong';
     res.status(status).json({ error: message });
 });
+
 // START SERVER
-app.listen(PORT, () => {
-    console.log('Server started on port ' + PORT);
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

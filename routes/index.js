@@ -6,12 +6,13 @@ import CommentController from '../controllers/commentController.js';
 import LikeController from '../controllers/likeController.js';
 import CartController from '../controllers/cartController.js';
 import OrderController from '../controllers/orderController.js';
+import MessageController from '../controllers/MessageController.js';
 const router = express.Router();
 
 // User routes
 router.get('/user/:userId', UserControllers.show);
 router.put('/user', verifyToke, UserControllers.update);
-
+router.get('/users/most-followers', UserControllers.getUsersWhichHaveMostFollowers);
 // User search
 router.get('/users', UserControllers.search);
 
@@ -45,5 +46,14 @@ router.delete('/cart/:cartId', verifyToke, CartController.deleteFromCart);
 // Order routes
 router.get('/orders', verifyToke, OrderController.getOrders);
 router.post('/orders', verifyToke, OrderController.createOrder);
+
+// Messaging routes
+router.get('/conversations', verifyToke, MessageController.getConversations);
+router.get('/conversation/:conversationId', verifyToke, MessageController.getConversation);
+router.post('/conversation', verifyToke, MessageController.createConversation);
+router.post('/message', verifyToke, MessageController.createMessage);
+router.get('/messages/:conversationId', verifyToke, MessageController.getMessages);
+
+
 
 export default router;

@@ -4,7 +4,9 @@ import { db2 } from "../connect.js";
 const PostModel = {
     getPosts: async (req, userId) => {
 
-        const query = userId ? 'SELECT p.*,u.id AS userId,u.name,u.profilePic FROM posts AS p JOIN users AS u ON (u.id = p.userId) WHERE p.userId = ? ORDER BY p.createdAt DESC' : 'SELECT p.*,u.id AS userId,u.name,u.profilePic FROM posts AS p JOIN users AS u ON (u.id = p.userId) LEFT JOIN relationships AS r ON (p.userId = r.followedUserId) WHERE r.followerUserId = ? OR p.userId = ? ORDER BY p.createdAt DESC';
+        const query = userId ? 'SELECT p.*,u.id AS userId,u.name,u.profilePic FROM posts AS p JOIN users AS u ON (u.id = p.userId) WHERE p.userId = ? ORDER BY p.createdAt DESC' : 'SELECT p.*,u.id AS userId,u.name,u.profilePic FROM posts AS p JOIN users AS u ON (u.id = p.userId) LEFT JOIN relationships AS r ON (p.userId = r.followedUserId) WHERE r.followerUserId = ? OR p.userId = ? GROUP BY p.id ORDER BY p.createdAt DESC';
+
+
 
         const values = userId ? [userId] : [req.user.id, req.user.id];
 
@@ -24,6 +26,7 @@ const PostModel = {
             throw err;
         }
     },
+
     createPost: async (req) => {
         const query = "INSERT INTO posts (`userId`, `title`, `desc`, `img` , `is_for_sell`, `price`, `qty`, `discount`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 

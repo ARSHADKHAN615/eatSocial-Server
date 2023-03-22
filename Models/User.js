@@ -14,6 +14,62 @@ const UserModel = {
             throw err;
         }
     },
+    getUserByEmailAndUsername: async (username, email) => {
+        const query = 'SELECT * FROM users WHERE email = ? OR username = ?';
+        try {
+            const [row] = await db2.query(query, [email, username]);
+            return row[0];
+        } catch (err) {
+            throw err;
+        }
+    },
+    getUserByEmail: async (email) => {
+        const query = 'SELECT * FROM users WHERE email = ?';
+        try {
+            const [row] = await db2.query(query, [email]);
+            return row[0];
+        } catch (err) {
+            throw err;
+        }
+    },
+    getUserByUsername: async (username) => {
+        const query = 'SELECT * FROM users WHERE username = ?';
+        try {
+            const [row] = await db2.query(query, [username]);
+            return row[0];
+        } catch (err) {
+            throw err;
+        }
+    },
+    getUsersWhichHaveMostFollowers: async () => {
+        const query = 'SELECT u.*,u.id AS userId,r.* FROM users AS u LEFT JOIN relationships AS r ON u.id = r.followedUserId GROUP BY u.id ORDER BY COUNT(r.followedUserId) DESC LIMIT 5';
+        try {
+            const [row] = await db2.query(query);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    createUser: async ({ username, email, password, name, profilePic }) => {
+        const query = 'INSERT INTO users (username, email, password, name, profilePic, createdAt) VALUES (?, ?, ?, ?, ?, NOW())';
+        const values = [username, email, password, name, profilePic];
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    createUserGoogle: async ({ username, email, name, img }) => {
+        const query = 'INSERT INTO users (username, email, name, profilePic, createdAt) VALUES (?, ?, ?, ?, NOW())';
+        const values = [username, email, name, img];
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
     userSearch: async (search) => {
         const query = 'SELECT * FROM users WHERE name LIKE ?';
         try {
