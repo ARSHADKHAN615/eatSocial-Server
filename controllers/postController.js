@@ -3,9 +3,7 @@ import createError from '../middlewares/errorHandling.js';
 
 const PostController = {
     getPosts: async (req, res, next) => {
-
         const userId = req.query.userId == 'undefined' ? null : req.query.userId;
-
         try {
             const row = await PostModel.getPosts(req, userId);
             if (!row.length) {
@@ -18,13 +16,25 @@ const PostController = {
                     ...post,
                     likes
                 }
-            }))
-
+            }));
             res.status(200).json(posts);
         } catch (err) {
             return next(err);
         }
 
+    },
+    getPost: async (req, res, next) => {
+        const { postId } = req.params;
+        try {
+            const row = await PostModel.getPost(req, postId);
+            if (!row) {
+                return next(createError(404, 'No post found'));
+            }
+            const likes = (await PostModel.getLikes(req, postId)).map((like) => like.userId);
+            res.status(200).json({ ...row, likes });
+        } catch (err) {
+            return next(err);
+        }
     },
     createPost: async (req, res, next) => {
         try {
@@ -47,6 +57,18 @@ const PostController = {
         try {
             const row = await PostModel.deletePost(req);
             res.status(200).json({ message: 'Post deleted' });
+        } catch (err) {
+            return next(err);
+        }
+    },
+    getFilteredPosts: async (req, res, next) => {
+        const { search, sellable, price, orderOfPopularity, orderOfNewest, limit } = req.query;
+        try {
+            const row = await PostModel.getFilteredPosts(req, search, sellable, price, orderOfPopularity, orderOfNewest, limit);
+            if (!row.length) {
+                return next(createError(404, 'No posts found'));
+            }
+            res.status(200).json(row);
         } catch (err) {
             return next(err);
         }

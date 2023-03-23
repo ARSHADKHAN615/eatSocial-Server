@@ -18,10 +18,12 @@ router.get('/users', UserControllers.search);
 
 
 // Post routes
-router.get('/posts',verifyToke, PostController.getPosts);
+router.get('/posts', verifyToke, PostController.getPosts);
+router.get('/post/:postId', verifyToke, PostController.getPost);
 router.post('/posts', verifyToke, PostController.createPost);
 router.put('/posts/:postId', verifyToke, PostController.updatePost);
 router.delete('/posts/:postId', verifyToke, PostController.deletePost);
+router.get('/posts/filter', verifyToke, PostController.getFilteredPosts);
 
 // Comment routes
 router.get('/posts/:postId/comments',verifyToke, CommentController.getComments);
