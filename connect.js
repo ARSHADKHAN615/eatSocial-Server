@@ -1,11 +1,11 @@
-import mysql from 'mysql';
+// import mysql from 'mysql';
 import mysql2 from 'mysql2';
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'eatSocial'
-});
+// const db1 = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
+//     database: 'eatSocial'
+// });
 
 export const db2 = mysql2.createPool({
     host: 'localhost',
@@ -15,4 +15,4 @@ export const db2 = mysql2.createPool({
 }).promise();
 
 
-export default db;
+// export default db1;

@@ -30,7 +30,7 @@ router.get('/posts/:postId/comments',verifyToke, CommentController.getComments);
 router.post('/posts/:postId/comments',verifyToke, CommentController.createComment);
 
 // Like routes
-router.get('/posts/:postId/likes', verifyToke, LikeController.getLikes);
+// router.get('/posts/:postId/likes', verifyToke, LikeController.getLikes);
 router.post('/posts/:postId/likes', verifyToke, LikeController.createLike);
 router.delete('/posts/:postId/likes', verifyToke, LikeController.deleteLike);
 
@@ -48,6 +48,8 @@ router.delete('/cart/:cartId', verifyToke, CartController.deleteFromCart);
 // Order routes
 router.get('/orders', verifyToke, OrderController.getOrders);
 router.post('/orders', verifyToke, OrderController.createOrder);
+router.get('/getsOrders', verifyToke, OrderController.userGetsOrdersProducts);
+router.put('/order-product-status', verifyToke, OrderController.productApprove);
 
 // Messaging routes
 router.get('/conversations', verifyToke, MessageController.getConversations);

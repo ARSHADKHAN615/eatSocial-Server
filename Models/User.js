@@ -118,5 +118,23 @@ const UserModel = {
             throw err;
         }
     },
+    followUser: async (req,userId) => {
+        const query = 'INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)';
+        try {
+            const [row] = await db2.query(query, [req.user.id, userId]);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    unfollowUser: async (req, userId) => {        
+        const query = 'DELETE FROM relationships WHERE followerUserId = ? AND followedUserId = ?';
+        try {
+            const [row] = await db2.query(query, [req.user.id, userId]);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
 }
 export default UserModel

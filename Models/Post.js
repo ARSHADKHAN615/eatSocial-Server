@@ -62,16 +62,6 @@ const PostModel = {
             throw err;
         }
     },
-    getLikes: async (req, postId) => {
-        const query = 'SELECT * FROM likes WHERE postId = ?';
-        try {
-            const [row] = await db2.query(query, [postId]);
-            return row;
-        } catch (err) {
-            throw err;
-        }
-    },
-
     createPost: async (req) => {
         const query = "INSERT INTO posts (`userId`, `title`, `desc`, `img` , `is_for_sell`, `price`, `qty`, `discount`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -113,6 +103,55 @@ const PostModel = {
             throw err;
         }
     },
+    getLikes: async (req, postId) => {
+        const query = 'SELECT * FROM likes WHERE postId = ?';
+        try {
+            const [row] = await db2.query(query, [postId]);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    createLike: async (req, postId) => {
+        const query = 'INSERT INTO likes (`postId`, `userId`) VALUES (?,?)';
+        try {
+            const [row] = await db2.query(query, [postId, req.user.id]);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+
+    },
+    deleteLike: async (req, postId) => {
+        const query = 'DELETE FROM likes WHERE postId = ? AND userId = ?';
+        try {
+            const [row] = await db2.query(query, [postId, req.user.id]);
+            return row;
+        } catch (err) {
+            throw err
+        }
+    },
+    getComments: async (req, postId) => {
+        const query = 'SELECT c.*,u.name,u.profilePic FROM comments AS c LEFT JOIN users AS u ON (c.userId = u.id) WHERE c.postId = ? ORDER BY c.createdAt DESC';
+        try {
+            const [row] = await db2.query(query, [postId]);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    createComment: async (req, postId) => {
+        const { description } = req.body;
+        const query = "INSERT INTO comments (`postId`, `userId`, `description`, `createdAt`) VALUES (?, ?, ?, NOW())";
+        const values = [postId, req.user.id, description];
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+
 
 };
 

@@ -14,6 +14,15 @@ const OrderModel = {
             throw err;
         }
     },
+    getOrder: async (orderId) => {
+        const query = "SELECT o.*,os.name AS orderStatus FROM orders AS o LEFT JOIN order_status AS os ON (o.order_status_id = os.order_status_id) WHERE o.order_id = ? ORDER BY o.createdAt DESC";
+        try {
+            const [row] = await db2.query(query, [orderId]);
+            return row[0];
+        } catch (err) {
+            throw err;
+        }
+    },
     getOrderProducts: async (orderId) => {
         const query = "SELECT op.*,p.title,p.price,p.discount,p.img FROM order_products AS op JOIN posts AS p ON (op.postId = p.id) WHERE op.order_id = ?";
 
@@ -38,10 +47,10 @@ const OrderModel = {
 
             //----------------------------- Insert order items
             const order_id = OrderInsertedRow.insertId;
-            const insertQueryForOrderItems = "INSERT INTO order_products (`order_id`, `totalQ`,`postId`,`userId`,`approve_status`) VALUES (?, ?, ?, ?, ?)";
+            const insertQueryForOrderItems = "INSERT INTO order_products (`order_id`, `totalQ`,`postId`,`userId`,`sellerId`,`approve_status`) VALUES (?, ?, ?, ?,?, ?)";
 
             const orderItems = Promise.all(cart.map(async (item) => {
-                const values = [order_id, item.qty, item.postId, item.userId, 0];
+                const values = [order_id, item.qty, item.postId, item.userId, item.sellerId, 0];
                 const [InsertedRow] = await db2.query(insertQueryForOrderItems, values);
                 return InsertedRow;
             }));
@@ -65,7 +74,41 @@ const OrderModel = {
             throw err;
         }
 
-    }
+    },
+    userGetsOrdersProducts: async (req) => {
+        const query = "SELECT op.*,p.title,p.price,p.discount,p.img FROM order_products AS op JOIN posts AS p ON (op.postId = p.id) WHERE op.sellerId = ?";
+        const values = [req.user.id];
+
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    productStatus: async (req) => {
+        const query = "UPDATE order_products SET approve_status = ? WHERE order_product_id = ?";
+        const values = [req.body.status, req.body.id];
+
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+    updateOrderStatus: async (orderId, status) => {
+        const query = "UPDATE orders SET order_status_id = ? WHERE order_id = ?";
+        const values = [status, orderId];
+
+        try {
+            const [row] = await db2.query(query, values);
+            return row;
+        } catch (err) {
+            throw err;
+        }
+    },
+
 };
 
 export default OrderModel;

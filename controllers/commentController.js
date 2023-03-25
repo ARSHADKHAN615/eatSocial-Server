@@ -1,27 +1,23 @@
-import db from "../connect.js";
+import PostModel from "../Models/Post.js";
 
 const CommentController = {
-    getComments: (req, res, next) => {
+    getComments: async (req, res, next) => {
         const { postId } = req.params;
-
-        const query = 'SELECT c.*,u.name,u.profilePic FROM comments AS c LEFT JOIN users AS u ON (c.userId = u.id) WHERE c.postId = ? ORDER BY c.createdAt DESC';
-
-        db.query(query, [postId], (err, data) => {
-            if (err) return next(err);
-            res.status(200).json(data);
-        })
+        try {
+            const row = await PostModel.getComments(req, postId);
+            res.status(200).json(row);
+        } catch (err) {
+            return next(err);
+        }
     },
-    createComment: (req, res, next) => {
+    createComment: async (req, res, next) => {
         const { postId } = req.params;
-        const { description } = req.body;
-
-        const query = "INSERT INTO comments (`postId`, `userId`, `description`, `createdAt`) VALUES (?, ?, ?, NOW())";
-
-
-        db.query(query, [postId, req.user.id, description], (err, data) => {
-            if (err) return next(err);
+        try {
+            const row = await PostModel.createComment(req, postId);
             res.status(201).json({ message: 'Comment created' });
-        })
+        } catch (err) {
+            return next(err);
+        }
     },
 };
 

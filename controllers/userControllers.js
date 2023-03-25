@@ -1,5 +1,4 @@
 import UserModel from "../Models/User.js";
-import db from "../connect.js";
 
 const UserControllers = {
     // GET /user/:id
@@ -41,19 +40,21 @@ const UserControllers = {
     },
     followUser: async (req, res, next) => {
         const { userId } = req.params;
-        const query = 'INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)';
-        db.query(query, [req.user.id, userId], (err, data) => {
-            if (err) return next(err);
+        try {
+            const data = await UserModel.followUser(req,userId);
             res.status(200).json({ message: 'User followed' });
-        })
+        } catch (err) {
+            return next(err);
+        }
     },
     unfollowUser: async (req, res, next) => {
         const { userId } = req.params;
-        const query = 'DELETE FROM relationships WHERE followerUserId = ? AND followedUserId = ?';
-        db.query(query, [req.user.id, userId], (err, data) => {
-            if (err) return next(err);
+        try {
+            const data = await UserModel.unfollowUser(req,userId);
             res.status(200).json({ message: 'User unfollowed' });
-        })
+        } catch (err) {
+            return next(err);
+        }
     },
 
 }

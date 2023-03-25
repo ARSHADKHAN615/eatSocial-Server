@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import db, { db2 } from '../connect.js';
 import jwt from 'jsonwebtoken';
 import createError from '../middlewares/errorHandling.js';
 import { generateFromEmail } from 'unique-username-generator';

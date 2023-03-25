@@ -1,5 +1,4 @@
 import OrderModel from "../Models/Order.js";
-import db from "../connect.js";
 import transporter from "../mailConf.js";
 import createError from "../middlewares/errorHandling.js";
 
@@ -42,7 +41,7 @@ const OrderController = {
             const mailOptions = {
                 from: 'eatSocial@store.in',
                 to: email,
-                subject: 'Order Confirmation',
+                subject: 'Order Placed',
                 html: ` <h1>Thank you for your order</h1> <p>Order ID: ${order_id}</p> <p>Order Total: ${total}</p> <p>Payment Method: ${payment_method == '2' ? 'Cash on Delivery' : 'Online Payment'}</p> <p>Order Status: Pending</p> <p>Order Date: ${new Date().toLocaleString()}</p> <table style="width:100%; border: 1px solid black; border-collapse: collapse;"> <tr style="border: 1px solid black; border-collapse: collapse;"> <th style="border: 1px solid black; border-collapse: collapse;">Product</th> <th style="border: 1px solid black; border-collapse: collapse;">Quantity</th> <th style="border: 1px solid black; border-collapse: collapse;">Price</th> </tr> ${cart.map((item) => `<tr style="border: 1px solid black; border-collapse: collapse;"> <td style="border: 1px solid black; border-collapse: collapse;">${item.title}</td> <td style="border: 1px solid black; border-collapse: collapse;">${item.qty}</td> <td style="border: 1px solid black; border-collapse: collapse;">${discountPrice(item.price, item.discount)} (${item.discount}% off)</td> </tr>`).join('')} </table> <p>Shipping Address: ${address}, ${city}, ${state}, ${zipcode}, ${country}</p> <p>Phone: ${phone}</p> <p>Email: ${email}</p> <p>Thank you for shopping with us.</p> <p>Regards,</p> <p>eatSocial</p>`,
             };
             transporter.sendMail(mailOptions, (err, data) => {
@@ -50,6 +49,73 @@ const OrderController = {
             });
 
             res.status(201).json({ message: 'Order created', order_id });
+        } catch (err) {
+            return next(err);
+        }
+    },
+    userGetsOrdersProducts: async (req, res, next) => {
+        try {
+            const row = await OrderModel.userGetsOrdersProducts(req);
+            if (!row.length) {
+                return next(createError(404, 'No orders found'));
+            }                              
+            const getOrderOnProduct = await Promise.all(row.map(async product => {
+                const order = await OrderModel.getOrder(product.order_id);
+                return {
+                    ...order,
+                    products: row.filter(product => product.order_id === order.order_id)
+                }
+            }));
+            res.status(200).json(getOrderOnProduct.filter((order, index, self) => index === self.findIndex((t) => (t.order_id === order.order_id))));
+        } catch (err) {
+            return next(err);
+        }
+    },
+    productApprove: async (req, res, next) => {
+        try {
+            const row = await OrderModel.productStatus(req);
+            if (!row.affectedRows) {
+                return next(createError(404, 'Order not found'));
+            } else {
+                const { order_id } = req.body;
+                const order = await OrderModel.getOrder(order_id);
+                // check if all products are approved
+                const products = await OrderModel.getOrderProducts(order_id);
+
+                const isAllApproved = products.every(product => product.approve_status === 1);
+                if (isAllApproved) {
+                    await OrderModel.updateOrderStatus(order_id, 3);
+
+                    // Send email to user for order approval
+                    const mailOptions = {
+                        from: 'eatSocial@store.in',
+                        to: order.email,
+                        subject: 'Order Confirmation',
+                        html: `<h1>Thank you for your order</h1> <p>Order ID: ${order_id}</p> <p>Order Total: ${order.order_total}</p> <p>Payment Method: ${order.payment_method == '2' ? 'Cash on Delivery' : 'Online Payment'}</p> <p>Order Status: Approved</p> <p>Order Date: ${new Date().toLocaleString()}</p> <table style="width:100%; border: 1px solid black; border-collapse: collapse;"> <tr style="border: 1px solid black; border-collapse: collapse;"> <th style="border: 1px solid black; border-collapse: collapse;">Product</th> <th style="border: 1px solid black; border-collapse: collapse;">Quantity</th>${products.map((item) => `<tr style="border: 1px solid black; border-collapse: collapse;"> <td style="border: 1px solid black; border-collapse: collapse;">${item.title}</td> <td style="border: 1px solid black; border-collapse: collapse;">${item.totalQ}</td> </tr>`).join('')} </table> <p>Shipping Address: ${order.address}, ${order.city}, ${order.state}, ${order.zipcode}, ${order.country}</p> <p>Phone: ${order.phone}</p> <p>Email: ${order.email}</p> <p>Thank you for shopping with us.</p> <p>Regards,</p> <p>eatSocial</p>`,
+                    };
+                    transporter.sendMail(mailOptions, (err, data) => {
+                        if (err) return next(err);
+                    });
+                }
+
+                // check any product is rejected
+                const isAnyRejected = products.some(product => product.approve_status === 2);
+                if (isAnyRejected && req.body.status === 2) {
+                    await OrderModel.updateOrderStatus(order_id, 2);
+                    // Send email to customer for order rejected
+                    const mailOptions = {
+                        from: 'eatSocial@store.in',
+                        to: order.email,
+                        subject: 'Order Rejected',
+                        html: `<h1>Thank you for your order</h1> <p>Order ID: ${order_id}</p> <p>Order Total: ${order.order_total}</p> <p>Payment Method: ${order.payment_method == '2' ? 'Cash on Delivery' : 'Online Payment'}</p> <p>Order Status: Rejected</p> <p>Order Date: ${new Date().toLocaleString()}</p> <table style="width:100%; border: 1px solid black; border-collapse: collapse;"> <tr style="border: 1px solid black; border-collapse: collapse;"> <th style="border: 1px solid black; border-collapse: collapse;">Product</th> <th style="border: 1px solid black; border-collapse: collapse;">Quantity</th>${products.map((item) => `<tr style="border: 1px solid black; border-collapse: collapse;"> <td style="border: 1px solid black; border-collapse: collapse;">${item.title}</td> <td style="border: 1px solid black; border-collapse: collapse;">${item.totalQ}</td> </tr>`).join('')} </table> <p>Shipping Address: ${order.address}, ${order.city}, ${order.state}, ${order.zipcode}, ${order.country}</p> <p>Phone: ${order.phone}</p> <p>Email: ${order.email}</p> <p>Thank you for shopping with us.</p> <p>Regards,</p> <p>eatSocial</p>`,
+                    };
+                    transporter.sendMail(mailOptions, (err, data) => {
+                        if (err) throw err;
+                    });
+                }
+
+            }
+            res.status(200).json({ message: 'Order status updated' });
         } catch (err) {
             return next(err);
         }

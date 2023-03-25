@@ -1,36 +1,25 @@
-import db from "../connect.js";
+import PostModel from "../Models/Post.js";
 
 const LikeController = {
-    getLikes: (req, res, next) => {
+    createLike: async (req, res, next) => {
         const { postId } = req.params;
-
-        const query = 'SELECT userId FROM likes AS l WHERE l.postId = ?';
-
-        db.query(query, [postId], (err, data) => {
-            if (err) return next(err);
-            res.status(200).json(data.map((like) => like.userId));
-        })
-    },
-    createLike: (req, res, next) => {
-        const { postId } = req.params;
-
-        const query = 'INSERT INTO likes (`postId`, `userId`) VALUES (?,?)';
-
-        db.query(query, [postId, req.user.id], (err, data) => {
-            if (err) return next(err);
+        try {
+            const row = await PostModel.createLike(req, postId);
             res.status(201).json({ message: 'Like created' });
-        })
+        } catch (err) {
+            return next(err);
+        }
 
     },
-    deleteLike: (req, res, next) => {
+    deleteLike: async (req, res, next) => {
         const { postId } = req.params;
 
-        const query = 'DELETE FROM likes WHERE postId = ? AND userId = ?';
-
-        db.query(query, [postId, req.user.id], (err, data) => {
-            if (err) return next(err);
-            res.status(201).json({ message: 'Like deleted' });
-        })
+        try {
+            const row = await PostModel.deleteLike(req, postId);
+            res.status(200).json({ message: 'Removed like' });
+        } catch (err) {
+            return next(err);
+        }
     },
 };
 
