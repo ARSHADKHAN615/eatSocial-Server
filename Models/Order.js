@@ -36,11 +36,11 @@ const OrderModel = {
     createOrder: async (req) => {
 
         //----------------------------- Insert order
-        const query = "INSERT INTO orders (`firstName`, `lastName`, `address`, `city`, `state`, `zipcode`, `country`, `phone`, `email`, `customer_id`, `order_total`, `payment_method`,`order_status_id`,`createdAt`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,NOW())";
+        const query = "INSERT INTO orders (`firstName`, `lastName`, `address`, `city`, `state`, `zipcode`, `country`, `phone`, `email`, `customer_id`, `order_total`, `payment_method`,`razorpay_payment_id`,`order_status_id`,`createdAt`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,NOW())";
 
-        const { firstname, lastname, address, city, state, zipcode, country, phone, email, total, payment_method, cart } = req.body;
+        const { firstname, lastname, address, city, state, zipcode, country, phone, email, total, payment_method,razorpay_payment_id, cart } = req.body;
 
-        const values = [firstname, lastname, address, city, state, zipcode, country, phone, email, req.user.id, total, payment_method];
+        const values = [firstname, lastname, address, city, state, zipcode, country, phone, email, req.user.id, total, payment_method,razorpay_payment_id];
 
         try {
             const [OrderInsertedRow] = await db2.query(query, values);

@@ -48,6 +48,8 @@ router.delete('/cart/:cartId', verifyToke, CartController.deleteFromCart);
 // Order routes
 router.get('/orders', verifyToke, OrderController.getOrders);
 router.post('/orders', verifyToke, OrderController.createOrder);
+router.post('/razorpayOrder', verifyToke, OrderController.razorpayOrder);
+router.post('/paymentVerification', verifyToke, OrderController.paymentVerification);
 router.get('/getsOrders', verifyToke, OrderController.userGetsOrdersProducts);
 router.put('/order-product-status', verifyToke, OrderController.productApprove);
 
