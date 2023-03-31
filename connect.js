@@ -1,18 +1,11 @@
-// import mysql from 'mysql';
 import mysql2 from 'mysql2';
-// const db1 = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
-//     database: 'eatSocial'
-// });
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const db2 = mysql2.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'eatSocial'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
 }).promise();
 
-
-// export default db1;

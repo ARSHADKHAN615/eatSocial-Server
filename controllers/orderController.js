@@ -92,7 +92,7 @@ const OrderController = {
                 <p>Order Status: Pending</p> <p>Order Date: ${new Date().toLocaleString()}</p> <table style="width:100%; border: 1px solid black; border-collapse: collapse;"> <tr style="border: 1px solid black; border-collapse: collapse;"> <th style="border: 1px solid black; border-collapse: collapse;">Product</th> <th style="border: 1px solid black; border-collapse: collapse;">Quantity</th> <th style="border: 1px solid black; border-collapse: collapse;">Price</th> </tr> ${cart.map((item) => `<tr style="border: 1px solid black; border-collapse: collapse;"> <td style="border: 1px solid black; border-collapse: collapse;">${item.title}</td> <td style="border: 1px solid black; border-collapse: collapse;">${item.qty}</td> <td style="border: 1px solid black; border-collapse: collapse;">${discountPrice(item.price, item.discount)} (${item.discount}% off)</td> </tr>`).join('')} </table> <p>Shipping Address: ${address}, ${city}, ${state}, ${zipcode}, ${country}</p> <p>Phone: ${phone}</p> <p>Email: ${email}</p> <p>Thank you for shopping with us.</p> <p>Regards,</p> <p>eatSocial</p>`,
             };
             transporter.sendMail(mailOptions, (err, data) => {
-                if (err) throw err;
+                if (err) return next(err);
             });
 
             res.status(201).json({ message: 'Order created', order_id });
